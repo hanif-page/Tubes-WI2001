@@ -1,0 +1,64 @@
+{
+    "desks":[
+        {
+            "building": "GKU 1",
+            "deskID": 1,
+            "buildingFloor": 2,
+            "deskStatus": "Available"
+        },
+        {
+            "building": "GKU 1",
+            "deskID": 2,
+            "buildingFloor": 2,
+            "deskStatus": "Occupied"
+        },
+        {
+            "building": "GKU 1",
+            "deskID": 3,
+            "buildingFloor": 3,
+            "deskStatus": "Occupied"
+        },
+        {
+            "building": "GKU 1",
+            "deskID": 4,
+            "buildingFloor": 3,
+            "deskStatus": "Occupied"
+        },
+        {
+            "building": "GKU 1",
+            "deskID": 5,
+            "buildingFloor": 5,
+            "deskStatus": "Available"
+        },
+        {
+            "building": "GKU 1",
+            "deskID": 6,
+            "buildingFloor": 5,
+            "deskStatus": "Available"
+        },
+        {
+            "building": "GKU 2",
+            "deskID": 7,
+            "buildingFloor": 2,
+            "deskStatus": "Available"
+        },
+        {
+            "building": "GKU 2",
+            "deskID": 8,
+            "buildingFloor": 2,
+            "deskStatus": "Occupied"
+        },
+        {
+            "building": "GKU 2",
+            "deskID": 9,
+            "buildingFloor": 3,
+            "deskStatus": "Occupied"
+        },
+            {
+            "building": "GKU 2",
+            "deskID": 10,
+            "buildingFloor": 3,
+            "deskStatus": "Available"
+        }
+    ]
+}
