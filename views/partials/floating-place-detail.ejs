@@ -1,1 +1,12 @@
 <!-- this will be used to create a floating detail of a building in the index.ejs -->
+
+<%# This box acts as a generic template. It's hidden by default and filled with data by JavaScript. %>
+<section id="floating-box" class="floating-place-detail" style="opacity: 0; cursor: none;">
+    <h3 id="floating-box-title">Building Name</h3>
+    <p><span id="floating-box-available">0</span> bangku kosong</p>
+    <p><span id="floating-box-occupied">0</span> bangku terisi</p>
+    <a id="floating-box-link" href="#" class="more-info">Ketuk untuk informasi lebih lanjut</a>
+</section>
+
+<!-- For the floating detail, it still broken in a width < 768px -->
+ <!-- LATER, FIX IT -->

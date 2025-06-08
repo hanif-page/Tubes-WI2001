@@ -1,0 +1,167 @@
+<% title = `siMeja - ${buildingName}` -%>
+<%# The layout line is commented out, assuming it's part of your project structure %>
+<%# layout('layout') -%>
+
+<div class="place-detail-container">
+    <a href="/" class="back-button">
+        <span class="material-symbols--arrow-back-ios-new-rounded"></span>
+        <span>kembali</span>
+    </a>
+
+    <header class="place-detail-header">
+        <%# Display the building name passed from the server %>
+        <h2><%= buildingName %></h2>
+
+        <div class="availability-legend">
+            <%# Dynamically display the count of available desks %>
+            <div class="legend-item">
+                <span class="color-box available"></span>
+                <span class="count"><%= availableCount %></span>
+                <span>Tersedia</span>
+            </div>
+             <%# Dynamically display the count of occupied desks %>
+            <div class="legend-item">
+                <span class="color-box occupied"></span>
+                <span class="count"><%= occupiedCount %></span>
+                <span>Terisi</span>
+            </div>
+        </div>
+    </header>
+
+
+    <main class="floors-container">
+        <%# Loop through each floor in the 'floors' object %>
+        <% Object.keys(floors).sort().forEach(floorNumber => { %>
+            <% const desksOnFloor = floors[floorNumber]; %>
+            
+            <section class="floor-section">
+                <h3>LANTAI <%= floorNumber %></h3>
+                <div class="seat-grid">
+                    
+                    <%# Loop through each desk on the current floor %>
+                    <% desksOnFloor.forEach(desk => { %>
+                        
+                        <%# Set the class to 'available' or 'occupied' based on deskStatus %>
+                        <div class="seat-box <%= desk.deskStatus.toLowerCase() %>">
+                            <span class="seat-label">No.</span>
+                            
+                            <%# Display the desk ID, padded with a leading zero if needed %>
+                            <span class="seat-number"><%= String(desk.deskID).padStart(2, '0') %></span>
+                        </div>
+                        
+                    <% }); %>
+                </div>
+            </section>
+            
+        <% }); %>
+    </main>
+</div>
+
+<% // layout('layout') -%>
+<% title = `siMeja - ${buildingName}` -%>
+
+<!-- <a href="./" class="back-button">
+    <span class="material-symbols--arrow-back-ios-new-rounded"></span>
+    <span class="">kembali</span>
+</a>
+
+<header class="place-detail-header">
+    <h2>GKU 3</h2>
+
+    <div class="availability-summary">
+        <div class="availability-box available">
+            <span class="count">8</span>
+            <span>Tersedia</span>
+        </div>
+        <div class="availability-box occupied">
+            <span class="count">12</span>
+            <span>Terisi</span>
+        </div>
+    </div>
+</header>
+
+
+<section class="building-section">    
+    <div class="floor-section">
+        <h3>LANTAI 1</h3>
+        <div class="seat-grid">
+            <div class="seat-number">01</div>
+            <div class="seat-number">02</div>
+            <div class="seat-number">03</div>
+            <div class="seat-number">04</div>
+        </div>
+    </div>
+
+    <div class="floor-section">
+        <h3>LANTAI 2</h3>
+        <div class="seat-grid">
+            <div class="seat-number">05</div>
+            <div class="seat-number">06</div>
+        </div>
+    </div>
+</section> 
+
+<div class="place-detail-container">
+    <a href="./" class="back-button">
+        <%# Using an inline SVG for the icon ensures it always loads %>
+        <span class="material-symbols--arrow-back-ios-new-rounded"></span>
+        <span>kembali</span>
+    </a>
+
+    <header class="place-detail-header">
+        <h2><%= buildingName %></h2>
+
+        <div class="availability-legend">
+            <div class="legend-item">
+                <span class="color-box available"></span>
+                <span class="count">8</span>
+                <span>Tersedia</span>
+            </div>
+            <div class="legend-item">
+                <span class="color-box occupied"></span>
+                <span class="count">12</span>
+                <span>Terisi</span>
+            </div>
+        </div>
+    </header>
+
+
+    <main class="floors-container">
+        <section class="floor-section">
+            <h3>LANTAI 1</h3>
+            <div class="seat-grid">
+                <%# Add 'available' or 'occupied' class based on seat status %>
+                <div class="seat-box available">
+                    <span class="seat-label">No.</span>
+                    <span class="seat-number">01</span>
+                </div>
+                <div class="seat-box available">
+                    <span class="seat-label">No.</span>
+                    <span class="seat-number">02</span>
+                </div>
+                <div class="seat-box available">
+                    <span class="seat-label">No.</span>
+                    <span class="seat-number">03</span>
+                </div>
+                <div class="seat-box occupied">
+                    <span class="seat-label">No.</span>
+                    <span class="seat-number">04</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="floor-section">
+            <h3>LANTAI 2</h3>
+            <div class="seat-grid">
+                <div class="seat-box occupied">
+                    <span class="seat-label">No.</span>
+                    <span class="seat-number">05</span>
+                </div>
+                <div class="seat-box occupied">
+                    <span class="seat-label">No.</span>
+                    <span class="seat-number">06</span>
+                </div>
+            </div>
+        </section>
+    </main>
+</div> -->

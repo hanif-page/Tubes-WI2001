@@ -1,0 +1,36 @@
+<% title = "siMeja" -%>
+
+<div class="top-title">
+    <h1>Peta ITB</h1>
+    <h1 class = "itb-site">Jatinangor</h1>
+</div>
+<div id="map-container" class="map">
+    <img src="images/map_itb_jatinangor.jpg" alt="ITB Jatinangor Map">
+
+    <%# Your map points with data-building attributes %>
+    <span class="material-symbols--location-on blue map-point" data-building="ASRAMA TB.1"></span>
+    <span class="material-symbols--location-on red map-point" data-building="ASRAMA TB.2"></span>
+    
+    <span class="material-symbols--location-on blue map-point" data-building="GKU 1"></span>
+
+    <%# This line includes the partial above %>
+    <%- include("partials/floating-place-detail") %> 
+</div>
+<div class="bottom-detail">
+    <h2>Pilih Lokasi Duduk</h2>
+
+    <div class="information">
+        <h3>Ketuk Icon Titik Pada Peta Untuk Informasi Lebih Lanjut</h3>
+        <div class="available-count">
+            <div class="number"><%= 34// availableCount %></div>
+            <div class = "text">Tersedia</div>
+        </div>
+        <div class="occupied-count">
+            <div class="number"><%= 55// occipedCount %></div>
+            <div class = "text">Penuh</div>
+        </div>
+    </div>
+</div>
+
+<!-- <div class="index-content">
+</div> -->

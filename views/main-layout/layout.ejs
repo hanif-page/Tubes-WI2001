@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- <link rel="icon" href="others/cT.svg" type="image/svg+xml"> -->
-    <title>siMeja</title>
+    <title><%= title %></title>
     <script src="https://code.iconify.design/2/2.2.1/iconify.min.js"></script>
     
     <!-- Filepond stylesheet -->
@@ -13,17 +13,17 @@
     <link rel="stylesheet" href="/styles/reset.css">
     <link rel="stylesheet" href="/styles/main.css">
 
-    <script defer src="/scripts/script.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+    </style>
+
 </head>
 <body>
-    <%- include("../partials/loader-page") %> 
+    <%- // include("../partials/loader-page") %> 
 
-    <div class="container">
-        <header>
-
-        </header>
-    
-        <main>
+    <!-- set the container with max-width and max-height of a phone -->
+    <div class="container"> 
+        <main class = "container-phone">
             <%- body %> 
         </main>
     
@@ -33,5 +33,12 @@
             </p>
         </footer>
     </div>
+
+    <%# 1. First, the inline script that defines the data %>
+    <script>
+        const buildingStats = <%- JSON.stringify(buildingStats) %>;
+    </script>
+    
+    <script src="/scripts/script.js"></script>
 </body>
 </html>
