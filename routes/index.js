@@ -67,8 +67,7 @@ router.get('/:buildingName', (req, res) => {
     });
 });
 
-
-// API route for AJAX refresh - this implementation is already correct.
+// API route for AJAX refresh
 router.get('/api/building/:buildingName', (req, res) => {
     const dbPath = path.join(__dirname, '../db.json');
     fs.readFile(dbPath, 'utf8', (err, data) => {
@@ -102,6 +101,55 @@ router.get('/api/building/:buildingName', (req, res) => {
     });
 });
 
+// This API endpoint provides the processed statistics for all buildings.
+router.get('/api/all-building-stats', (req, res) => {
+    const dbPath = path.join(__dirname, '../db.json');
+
+    // Read the latest version of the database file to ensure data is current.
+    fs.readFile(dbPath, 'utf8', (err, data) => {
+        if (err) {
+            console.error("API Error: Could not read db.json.", err);
+            return res.status(500).json({ error: "Failed to read database." });
+        }
+
+        try {
+            const db = JSON.parse(data);
+
+            // --- Process stats for each building ---
+            const processedStats = db.desks.reduce((acc, desk) => {
+                const buildingName = desk.buildingName;
+                if (!acc[buildingName]) {
+                    acc[buildingName] = { available: 0, occupied: 0 };
+                }
+                if (desk.deskStatus === 'Available') {
+                    acc[buildingName].available++;
+                } else {
+                    acc[buildingName].occupied++;
+                }
+                return acc;
+            }, {});
+
+            // --- Calculate overall totals ---
+            let totalAvailable = 0;
+            let totalOccupied = 0;
+            for (const building in processedStats) {
+                totalAvailable += processedStats[building].available;
+                totalOccupied += processedStats[building].occupied;
+            }
+
+            // --- Send the final data as a JSON response ---
+            res.json({
+                buildingStats: processedStats,
+                totalAvailable: totalAvailable,
+                totalOccupied: totalOccupied
+            });
+
+        } catch (parseErr) {
+            console.error("API Error: Could not parse db.json.", parseErr);
+            res.status(500).json({ error: "Database file is corrupted." });
+        }
+    });
+});
 
 // --- CORRECTED UPDATE ROUTE ---
 router.post('/update-desk', (req, res) => {
