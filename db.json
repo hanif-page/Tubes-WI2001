@@ -1,5 +1,5 @@
 {
-    "desks":[
+    "desks": [
         {
             "buildingName": "GKU 1",
             "deskID": 1,
@@ -54,7 +54,7 @@
             "buildingFloor": 3,
             "deskStatus": "Occupied"
         },
-            {
+        {
             "buildingName": "GKU 2",
             "deskID": 10,
             "buildingFloor": 3,

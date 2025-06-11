@@ -32,5 +32,48 @@
     </div>
 </div>
 
-<!-- <div class="index-content">
-</div> -->
+<script>
+    let buildingStats = <%- JSON.stringify(buildingStats) %>;
+</script>
+
+<!--
+  This script block handles the auto-refreshing logic.
+-->
+<script>
+    /**
+     * This function fetches the latest building stats and updates the page.
+     */
+    async function refreshAllBuildingStats() {
+        try {
+            const response = await fetch('/api/all-building-stats');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+
+            // 1. Update the global 'buildingStats' variable.
+            //    This ensures that when a user clicks a map pin, the floating
+            //    box will show the most recent data.
+            buildingStats = data.buildingStats;
+
+            // 2. Update the total counts in the bottom detail section.
+            const availableCountEl = document.querySelector('.bottom-detail .available-count .number');
+            const occupiedCountEl = document.querySelector('.bottom-detail .occupied-count .number');
+
+            if (availableCountEl) availableCountEl.textContent = data.totalAvailable;
+            if (occupiedCountEl) occupiedCountEl.textContent = data.totalOccupied;
+            
+            console.log('Main page stats refreshed.');
+
+        } catch (error) {
+            console.error('Failed to refresh main page stats:', error);
+        }
+    }
+
+    // When the page is fully loaded, start the refresh cycle.
+    document.addEventListener('DOMContentLoaded', () => {
+        // Run the refresh function once immediately, then every 10 seconds.
+        refreshAllBuildingStats();
+        setInterval(refreshAllBuildingStats, 10000); // 10000 ms = 10 seconds
+    });
+</script>

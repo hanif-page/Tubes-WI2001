@@ -1,43 +1,28 @@
-const express = require("express")
-const router = express.Router()
+const express = require("express");
+const fs = require('fs');
+const path = require('path');
+const router = express.Router();
 
-// creating a dummy desk data
-let desks = require("../db.json").desks
+// This line is okay for routes that only READ and don't need real-time data,
+// but we will avoid using it for any WRITE operations.
+let initialDesks = require("../db.json").desks;
 
 router.get('/', (req, res) => {
-// --- 1. PROCESS THE DATA ---
-    // We will use the .reduce() method to transform the array of desks 
-    // into an object of buildings with their stats.
-    const processedStats = desks.reduce((acc, desk) => {
+    // For the main page, it's often acceptable to use the initially loaded data
+    // as it's less critical and reduces file reads.
+    const processedStats = initialDesks.reduce((acc, desk) => {
         const buildingName = desk.buildingName;
-
-        // If we haven't seen this building yet, initialize it in our object
         if (!acc[buildingName]) {
-            acc[buildingName] = {
-                available: 0,
-                occupied: 0
-            };
+            acc[buildingName] = { available: 0, occupied: 0 };
         }
-
-        // Increment the count based on the desk's status
         if (desk.deskStatus === 'Available') {
             acc[buildingName].available++;
         } else if (desk.deskStatus === 'Occupied') {
             acc[buildingName].occupied++;
         }
-
-        return acc; // Return the accumulator for the next iteration
-    }, {}); // The initial value of our accumulator is an empty object {}
-
-    /*
-    After the reduce function, `processedStats` will look like this:
-    {
-      "GKU 1": { "available": 3, "occupied": 3 },
-      "GKU 2": { "available": 2, "occupied": 2 }
-    }
-    */
+        return acc;
+    }, {});
     
-    // --- 2. CALCULATE TOTALS for the bottom bar ---
     let totalAvailable = 0;
     let totalOccupied = 0;
     for (const building in processedStats) {
@@ -45,98 +30,168 @@ router.get('/', (req, res) => {
         totalOccupied += processedStats[building].occupied;
     }
 
-
-    // --- 3. RENDER THE EJS TEMPLATE ---
-    // Pass the processed data to the 'index.ejs' file.
     res.render('index', {
-        buildingStats: processedStats, // This object will be used for the floating box
-        totalAvailable: totalAvailable,  // This number is for the bottom bar
-        totalOccupied: totalOccupied     // This number is for the bottom bar
-    });
-})
-
-// router.get('/gku-1', (req, res) => {
-//     // getting the available count and the occupied count
-//     let availableCount = 0;
-//     let occupiedCount = 0;
-
-//     desks.forEach(el => {
-//         if(el.buildingName == "GKU 1" && el.deskStatus == "Available") {
-//             availableCount += 1;
-//             console.log("available");
-//         }
-//         else if (el.buildingName == "GKU 1" && el.deskStatus == "Occupied"){
-//             occupiedCount += 1;
-//             console.log("occupied");
-//         }
-//     });
-
-//     res.render("place-detail", {
-//         desks: desks,
-//         buildingName: "GKU 1",
-//         availableCount,
-//         occupiedCount
-//     })
-// })
-
-router.get('/:buildingName', (req, res) => {
-    const requestedBuilding = req.params.buildingName.replace('-', ' ');
-    const dbData = require("../db.json"); // Load the JSON data
-
-    // 1. Filter desks for the requested building
-    const buildingDesks = dbData.desks.filter(desk => desk.buildingName.toLowerCase() === requestedBuilding.toLowerCase());
-
-    // 2. Group desks by floor
-    const floors = {};
-    buildingDesks.forEach(desk => {
-        const floor = desk.buildingFloor;
-        if (!floors[floor]) {
-            floors[floor] = [];
-        }
-        floors[floor].push(desk);
-    });
-
-    // 3. Calculate available and occupied counts
-    const availableCount = buildingDesks.filter(d => d.deskStatus === 'Available').length;
-    const occupiedCount = buildingDesks.length - availableCount;
-
-    // 4. Render the EJS template with the prepared data
-    res.render('place-detail', {
-        buildingName: requestedBuilding.toUpperCase(),
-        floors: floors,
-        availableCount: availableCount,
-        occupiedCount: occupiedCount,
-        buildingStats: {} // empty object, because we don't use it in this page
+        buildingStats: processedStats,
+        totalAvailable: totalAvailable,
+        totalOccupied: totalOccupied
     });
 });
 
-router.get('/gku-1/:deskID', (req, res) => {
-    res.render("place-detail", {
-        deskID: req.params.deskID,
-        desks: desks
-    })
-})
 
-router.get('/tb-1', (req, res) => {
-    // getting the available count and the occupied count
-    let availableCount = 0;
-    let occupiedCount = 0;
+router.get('/:buildingName', (req, res) => {
+    // This route correctly reads the file fresh each time, which is good.
+    const dbPath = path.join(__dirname, '../db.json');
+    fs.readFile(dbPath, 'utf8', (err, data) => {
+        if (err) {
+            return res.status(500).send("Error reading database file.");
+        }
+        const dbData = JSON.parse(data);
+        const requestedBuilding = req.params.buildingName.replace(/-/g, ' ');
+        const buildingDesks = dbData.desks.filter(desk => desk.buildingName.toLowerCase() === requestedBuilding.toLowerCase());
+        const floors = {};
+        buildingDesks.forEach(desk => {
+            const floor = desk.buildingFloor;
+            if (!floors[floor]) floors[floor] = [];
+            floors[floor].push(desk);
+        });
+        const availableCount = buildingDesks.filter(d => d.deskStatus === 'Available').length;
+        const occupiedCount = buildingDesks.length - availableCount;
 
-    desks.desks.forEach(el => {
-        
+        res.render('place-detail', {
+            buildingName: requestedBuilding.toUpperCase(),
+            floors: floors,
+            availableCount: availableCount,
+            occupiedCount: occupiedCount,
+            buildingStats: {} // empty object, because we don't use it in this page
+        });
     });
+});
 
-    res.render("place-detail", {
-        desks: desks,
-        buildingName: "Asrama TB-1"
-    })
-})
+// API route for AJAX refresh
+router.get('/api/building/:buildingName', (req, res) => {
+    const dbPath = path.join(__dirname, '../db.json');
+    fs.readFile(dbPath, 'utf8', (err, data) => {
+        if (err) {
+            console.error("Error reading db.json for API:", err);
+            return res.status(500).json({ error: "Could not read database file." });
+        }
+        try {
+            const dbData = JSON.parse(data);
+            const requestedBuilding = req.params.buildingName.replace(/-/g, ' ');
+            const buildingDesks = dbData.desks.filter(desk => desk.buildingName.toLowerCase() === requestedBuilding.toLowerCase());
+            const floors = {};
+            buildingDesks.forEach(desk => {
+                const floor = desk.buildingFloor;
+                if (!floors[floor]) floors[floor] = [];
+                floors[floor].push(desk);
+            });
+            const availableCount = buildingDesks.filter(d => d.deskStatus === 'Available').length;
+            const occupiedCount = buildingDesks.length - availableCount;
 
-// const getUser = async (req) => {
-//     const userEmail = req.user.email
-//     const user = await User.findOne({ email: userEmail })
+            res.json({
+                buildingName: requestedBuilding.toUpperCase(),
+                floors: floors,
+                availableCount: availableCount,
+                occupiedCount: occupiedCount
+            });
+        } catch (parseErr) {
+            console.error("Error parsing db.json:", parseErr);
+            return res.status(500).json({ error: "Database file is corrupted." });
+        }
+    });
+});
 
-//     return user // will be mainly use as boolean statement (either true or false)
-// }
+// This API endpoint provides the processed statistics for all buildings.
+router.get('/api/all-building-stats', (req, res) => {
+    const dbPath = path.join(__dirname, '../db.json');
 
-module.exports = router
+    // Read the latest version of the database file to ensure data is current.
+    fs.readFile(dbPath, 'utf8', (err, data) => {
+        if (err) {
+            console.error("API Error: Could not read db.json.", err);
+            return res.status(500).json({ error: "Failed to read database." });
+        }
+
+        try {
+            const db = JSON.parse(data);
+
+            // --- Process stats for each building ---
+            const processedStats = db.desks.reduce((acc, desk) => {
+                const buildingName = desk.buildingName;
+                if (!acc[buildingName]) {
+                    acc[buildingName] = { available: 0, occupied: 0 };
+                }
+                if (desk.deskStatus === 'Available') {
+                    acc[buildingName].available++;
+                } else {
+                    acc[buildingName].occupied++;
+                }
+                return acc;
+            }, {});
+
+            // --- Calculate overall totals ---
+            let totalAvailable = 0;
+            let totalOccupied = 0;
+            for (const building in processedStats) {
+                totalAvailable += processedStats[building].available;
+                totalOccupied += processedStats[building].occupied;
+            }
+
+            // --- Send the final data as a JSON response ---
+            res.json({
+                buildingStats: processedStats,
+                totalAvailable: totalAvailable,
+                totalOccupied: totalOccupied
+            });
+
+        } catch (parseErr) {
+            console.error("API Error: Could not parse db.json.", parseErr);
+            res.status(500).json({ error: "Database file is corrupted." });
+        }
+    });
+});
+
+// --- CORRECTED UPDATE ROUTE ---
+router.post('/update-desk', (req, res) => {
+    const { buildingName, deskID, isOccupied } = req.body;
+    const dbPath = path.join(__dirname, '../db.json');
+
+    // STEP 1: READ the latest version of the file first.
+    fs.readFile(dbPath, 'utf8', (err, data) => {
+        if (err) {
+            console.error("Read error:", err);
+            return res.status(500).send("Error reading database file before update.");
+        }
+
+        try {
+            const db = JSON.parse(data);
+            
+            // STEP 2: MODIFY the data that was just read.
+            const deskIndex = db.desks.findIndex(d => d.deskID == deskID && d.buildingName == buildingName);
+
+            if (deskIndex !== -1) {
+                db.desks[deskIndex].deskStatus = isOccupied ? 'Occupied' : 'Available';
+                
+                // STEP 3: WRITE the modified data back to the file.
+                fs.writeFile(dbPath, JSON.stringify(db, null, 4), (writeErr) => {
+                    if (writeErr) {
+                        console.error("Write error:", writeErr);
+                        return res.status(500).send("Error writing updated data to database file.");
+                    }
+                    console.log(`Successfully updated Desk ID ${deskID}`);
+                    // Also update the in-memory version for the main page after a successful write
+                    initialDesks = db.desks;
+                    res.status(200).send({ message: `Desk ${deskID} updated.` });
+                });
+            } else {
+                res.status(404).send({ message: `Desk with ID ${deskID} not found.` });
+            }
+        } catch (parseErr) {
+            console.error("Parse error:", parseErr);
+            res.status(500).send("Database file is corrupt, cannot update.");
+        }
+    });
+});
+
+
+module.exports = router;

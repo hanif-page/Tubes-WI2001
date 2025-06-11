@@ -60,108 +60,86 @@
 <% // layout('layout') -%>
 <% title = `siMeja - ${buildingName}` -%>
 
-<!-- <a href="./" class="back-button">
-    <span class="material-symbols--arrow-back-ios-new-rounded"></span>
-    <span class="">kembali</span>
-</a>
+<script>
+    /**
+     * This function fetches the latest desk data from the server and updates the UI.
+     * It's designed to be called repeatedly by setInterval.
+     */
+    async function refreshDeskData() {
+        // Find the building name from the page's h2 element.
+        const buildingHeader = document.querySelector('.place-detail-header h2');
+        
+        // Gracefully stop if the header element isn't found, to prevent errors.
+        if (!buildingHeader) {
+            console.error("Could not find the building header element. Auto-refresh stopped.");
+            if (window.refreshIntervalId) {
+                clearInterval(window.refreshIntervalId);
+            }
+            return; 
+        }
 
-<header class="place-detail-header">
-    <h2>GKU 3</h2>
+        // Format the building name for the API URL (e.g., "GKU 1" becomes "gku-1").
+        const buildingName = buildingHeader.textContent;
+        const buildingSlug = buildingName.toLowerCase().replace(/ /g, '-');
 
-    <div class="availability-summary">
-        <div class="availability-box available">
-            <span class="count">8</span>
-            <span>Tersedia</span>
-        </div>
-        <div class="availability-box occupied">
-            <span class="count">12</span>
-            <span>Terisi</span>
-        </div>
-    </div>
-</header>
+        try {
+            console.log(`[${new Date().toLocaleTimeString()}] Refreshing data for ${buildingName}...`);
 
+            // Call the API endpoint to get the latest data.
+            const response = await fetch(`/api/building/${buildingSlug}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
 
-<section class="building-section">    
-    <div class="floor-section">
-        <h3>LANTAI 1</h3>
-        <div class="seat-grid">
-            <div class="seat-number">01</div>
-            <div class="seat-number">02</div>
-            <div class="seat-number">03</div>
-            <div class="seat-number">04</div>
-        </div>
-    </div>
+            // --- 1. Update the Header Counts (Tersedia / Terisi) ---
+            const availableCountEl = document.querySelector('.availability-legend .legend-item:first-child .count');
+            const occupiedCountEl = document.querySelector('.availability-legend .legend-item:last-child .count');
+            
+            if (availableCountEl) availableCountEl.textContent = data.availableCount;
+            if (occupiedCountEl) occupiedCountEl.textContent = data.occupiedCount;
 
-    <div class="floor-section">
-        <h3>LANTAI 2</h3>
-        <div class="seat-grid">
-            <div class="seat-number">05</div>
-            <div class="seat-number">06</div>
-        </div>
-    </div>
-</section> 
+            // --- 2. Update the Color of Each Seat Box ---
+            // Loop through every desk in the received data.
+            Object.values(data.floors).flat().forEach(desk => {
+                // Find the corresponding seat-box element on the page by its unique ID.
+                const seatBox = document.getElementById(`desk-${desk.deskID}`);
+                
+                if (seatBox) {
+                    const newStatus = desk.deskStatus.toLowerCase(); // 'available' or 'occupied'
+                    
+                    // This is the key part for changing colors:
+                    // Remove both possible color classes, then add the correct new one.
+                    seatBox.classList.remove('available', 'occupied');
+                    seatBox.classList.add(newStatus);
+                }
+            });
 
-<div class="place-detail-container">
-    <a href="./" class="back-button">
-        <%# Using an inline SVG for the icon ensures it always loads %>
-        <span class="material-symbols--arrow-back-ios-new-rounded"></span>
-        <span>kembali</span>
-    </a>
+        } catch (error) {
+            console.error("Failed to refresh desk data:", error);
+        }
+    }
 
-    <header class="place-detail-header">
-        <h2><%= buildingName %></h2>
+    /**
+     * This ensures the script runs only after the entire HTML page has been loaded and is ready.
+     * This prevents "document.querySelector(...) is null" errors.
+     */
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Initial Setup on Page Load ---
+        // Go through each seat-box once and give it a unique ID based on its number.
+        // This makes it much faster to find and update them later.
+        document.querySelectorAll('.seat-box').forEach(seatBox => {
+            const seatNumberEl = seatBox.querySelector('.seat-number');
+            if(seatNumberEl) {
+                const seatNumber = seatNumberEl.textContent;
+                seatBox.id = `desk-${parseInt(seatNumber, 10)}`;
+            }
+        });
 
-        <div class="availability-legend">
-            <div class="legend-item">
-                <span class="color-box available"></span>
-                <span class="count">8</span>
-                <span>Tersedia</span>
-            </div>
-            <div class="legend-item">
-                <span class="color-box occupied"></span>
-                <span class="count">12</span>
-                <span>Terisi</span>
-            </div>
-        </div>
-    </header>
-
-
-    <main class="floors-container">
-        <section class="floor-section">
-            <h3>LANTAI 1</h3>
-            <div class="seat-grid">
-                <%# Add 'available' or 'occupied' class based on seat status %>
-                <div class="seat-box available">
-                    <span class="seat-label">No.</span>
-                    <span class="seat-number">01</span>
-                </div>
-                <div class="seat-box available">
-                    <span class="seat-label">No.</span>
-                    <span class="seat-number">02</span>
-                </div>
-                <div class="seat-box available">
-                    <span class="seat-label">No.</span>
-                    <span class="seat-number">03</span>
-                </div>
-                <div class="seat-box occupied">
-                    <span class="seat-label">No.</span>
-                    <span class="seat-number">04</span>
-                </div>
-            </div>
-        </section>
-
-        <section class="floor-section">
-            <h3>LANTAI 2</h3>
-            <div class="seat-grid">
-                <div class="seat-box occupied">
-                    <span class="seat-label">No.</span>
-                    <span class="seat-number">05</span>
-                </div>
-                <div class="seat-box occupied">
-                    <span class="seat-label">No.</span>
-                    <span class="seat-number">06</span>
-                </div>
-            </div>
-        </section>
-    </main>
-</div> -->
+        // --- Start the Auto-Refresh ---
+        // Call the function once immediately to get the initial data.
+        refreshDeskData();
+        // Set an interval to automatically call the function every 10 seconds.
+        window.refreshIntervalId = setInterval(refreshDeskData, 1000);
+    });
+</script>

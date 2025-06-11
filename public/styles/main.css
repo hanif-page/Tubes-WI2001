@@ -263,20 +263,35 @@
 }
 
 .container-phone {
-  /* Default styles for mobile (below 500px) */
-  /* width: 100%; */
-  max-width: 97.5%;
-  /* margin: 0 auto; Optional: centers the container */
-  margin-bottom: 2rem;
-  padding: 0 15px; /* Optional: adds some padding */
-  border: 1px solid black;
-  flex: 1 0 auto; /* grow to fill space */
+    /* ... your existing styles ... */
+    max-width: 97.5%;
+    margin-bottom: 2rem;
+    padding: 0 15px;
+    border: 1px solid black;
+    flex: 1 0 auto;
+    color: #ffffff;
+    background-color: #333333;
+    padding-top: 2rem;
+    padding-bottom: 1rem;
 
-  color: #ffffff;
-  background-color: #333333;
+    /* --- FIX STARTS HERE --- */
 
-  padding-top: 2rem;
-  padding-bottom: 1rem;
+    /* 1. Add position: relative. 
+        This establishes a "containing block" for any absolutely positioned
+        children, like your floating detail box. It ensures the child elements 
+        are contained within this parent.
+    */
+    position: relative;
+
+    /* 2. Add overflow-x: hidden.
+        This is the key to the solution. It tells the container: "If any content
+        inside me (like the floating blue box) tries to stick out sideways, 
+        just cut it off. Do NOT create a horizontal scrollbar."
+        This will not affect the vertical scrolling of the container.
+    */
+    overflow-x: hidden;
+    
+    /* --- FIX ENDS HERE --- */
 }
 
 .container-phone img {
@@ -592,6 +607,8 @@ body {
     scrollbar-width: thin; /* For Firefox */
     scrollbar-color: #888 #f1f1f1; /* For Firefox */
   }
+
+  
   
   /* Optional: Custom scrollbar for Webkit browsers */
   .container-phone::-webkit-scrollbar {
