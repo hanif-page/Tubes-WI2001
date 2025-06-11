@@ -16,7 +16,7 @@ app.set('view engine', 'ejs')
 app.set('layout', 'main-layout/layout')
 app.use(expressLayouts)
 app.use(express.static('public'))
-// app.use(express.json())
+app.use(express.json())
 // app.use(methodOverride("_method"))
 // app.use(bodyParser.urlencoded({limit: "10mb", extended: false}))
 
