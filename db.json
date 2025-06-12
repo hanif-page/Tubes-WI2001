@@ -4,7 +4,7 @@
             "buildingName": "GKU 1",
             "deskID": 1,
             "buildingFloor": 2,
-            "deskStatus": "Available"
+            "deskStatus": "Occupied"
         },
         {
             "buildingName": "GKU 1",
