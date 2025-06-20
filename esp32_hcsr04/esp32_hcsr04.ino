@@ -9,7 +9,7 @@
 // --- WiFi & Server ---
 // Set to 'true' to use a standard WPA2 network (SSID & password)
 // Set to 'false' to use a WPA2-Enterprise network (e.g., University WiFi)
-const bool USE_WPA2_PERSONAL = false;
+const bool USE_WPA2_PERSONAL = true;
 
 // -- WPA2-Personal Credentials (like a phone hotspot) --
 const char* WIFI_SSID_PERSONAL = "Hanif";
@@ -22,7 +22,7 @@ const char* EAP_IDENTITY = "13224087@mahasiswa.itb.ac.id"; // Your full universi
 const char* EAP_PASSWORD = ""; // Your email password
 
 // -- Server --
-const char* SERVER_IP = "10.97.59.226"; // if phone hotspot Hanif, then use 172.20.10.3
+const char* SERVER_IP = "172.20.10.3"; // if phone hotspot Hanif, then use 172.20.10.3
 const int SERVER_PORT = 3000;
 const char* SERVER_ENDPOINT = "/update-desk";
 
@@ -36,6 +36,7 @@ const int ECHO_PIN = 18; // HC-SR04 Echo pin
 const int TRIG2_PIN = 4;
 const int ECHO2_PIN = 16;
 const float DISTANCE_THRESHOLD_CM = 95.0; // If an object is closer than this, the desk is "Occupied"
+const int LED_BUILTIN = 2;
 
 // --- Timing ---
 const unsigned long UPDATE_INTERVAL_MS = 1000; // Time between sensor reads and POST requests
@@ -64,6 +65,11 @@ void setup() {
   pinMode(TRIG2_PIN, OUTPUT);
   pinMode(ECHO2_PIN, INPUT);
 
+  pinMode(LED_BUILTIN, OUTPUT);
+
+  // indicator: BUILTIN LED is HIGH when the device does not connected to the wifi
+  digitalWrite(LED_BUILTIN, HIGH);
+  
   connectToWiFi();
 }
 
@@ -84,6 +90,9 @@ void loop() {
       connectToWiFi();
       return; // Skip this iteration and try again after reconnecting
     }
+
+    // turning off the LED because the device is connected to the wifi
+    digitalWrite(LED_BUILTIN, LOW);
 
     // 1. Read sensor and determine occupation status
     float distance = readSensorDistance();
@@ -232,9 +241,17 @@ void sendDeskData(bool isOccupied) {
     Serial.print("Response body: ");
     Serial.println(response);
   } else {
+    blinkLED(); // work as an indicator a failed data transport
     Serial.print("Error on sending POST: ");
     Serial.println(http.errorToString(httpResponseCode));
   }
 
   http.end(); // Free up resources
+}
+
+void blinkLED(){
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(500);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(500);
 }
